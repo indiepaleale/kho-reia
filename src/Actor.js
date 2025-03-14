@@ -1,16 +1,6 @@
 import { THREE, scene, camera, renderer } from './three.js';
 
-export default function actor(x, z, stage) {
-    const geometry = new THREE.SphereGeometry(2, 10, 10, 4);
-    const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
-
-    const actor = new Actor(x, 0, z, geometry, material);
-    stage.add(actor);
-
-    return actor;
-}
-
-class Actor extends THREE.Object3D {
+export default class Actor extends THREE.Object3D {
     constructor(x, y, z, geometry, material) {
         super();
         this.add(new THREE.Mesh(geometry, material));

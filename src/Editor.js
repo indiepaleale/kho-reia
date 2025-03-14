@@ -4,9 +4,9 @@ import { EditorView, keymap } from "@codemirror/view"
 import { defaultKeymap } from "@codemirror/commands"
 import { javascript } from "@codemirror/lang-javascript"
 
-import actor from "./Actor"
+import * as globalFunctions from './globalFunctions.js';
 
-function initEditor({ root, initalCode = '', onEvaluate, onStop }) {
+function initEditor({ root, initalCode = '', onEvaluate, onStop, onPause }) {
     console.log('Editor loaded');
 
     // Initialize editor
@@ -20,11 +20,18 @@ function initEditor({ root, initalCode = '', onEvaluate, onStop }) {
                 keymap.of([
                     {
                         key: "Ctrl-Enter",
-                        run: () => onEvaluate?.(),
+                        run: () => {
+                            onEvaluate?.()
+                            return true
+                        },
                     },
                     {
                         key: "Ctrl-.",
                         run: () => onStop?.(),
+                    },
+                    {
+                        key: "Ctrl-,",
+                        run: () => onPause?.(),
                     }
                 ])
             )
@@ -45,11 +52,14 @@ export default class REPL {
             stage,
 
         } = options;
+        this.stage = stage;
         this.editor = initEditor({
             root,
             initalCode,
             onEvaluate: () => this.evaluate(),
+            onPause: () => this.stage.pause(),
         });
+        this.globalFunctions = globalFunctions;
     }
 
     evaluate() {
@@ -57,7 +67,14 @@ export default class REPL {
 
         try {
             const transpiledCode = this.transpile(code);
-            new Function("actor", transpiledCode)(actor);
+            console.log(transpiledCode);
+
+            const actorsArgs = this.stage.actors.keys();
+            const actorsValues = this.stage.actors.values();
+
+            const functionsArgs = ['stage', ...actorsArgs, ...Object.keys(this.globalFunctions)];
+            const functionValues = [this.stage, ...actorsValues, ...Object.values(this.globalFunctions)];
+            new Function(...functionsArgs, transpiledCode)(...functionValues);
         } catch (e) {
             console.error(e);
         }
@@ -67,14 +84,16 @@ export default class REPL {
         const lines = code.split('\n');
         const transpiledLines = lines.map(line => {
             if (line.trim().startsWith('$')) {
-                const [namePart, actorPart] = line.split(':');
+                const [namePart, codePart] = line.split(':');
                 const name = namePart.trim().substring(1).trim();
-                const actorCode = actorPart.trim();
+                const actorCode = codePart.trim();
 
                 if (actorCode.startsWith('actor(')) {
-                    return `${actorCode.slice(0, -1)}, {name: '${name}', stage: stage})`;
+                    const codePart = actorCode.split('.');
+                    codePart[0] = codePart[0].slice(0, -1) + `, {name: '${name}', stage: stage}` + codePart[0].slice(-1);
+                    return codePart.join('.');
                 } else {
-                    throw new Error(`Invalid actor definition for ${name}`);
+                    throw new Error(`${name}: needs to be followed with actor()`);
                 }
             }
             return line;

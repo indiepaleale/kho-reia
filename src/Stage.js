@@ -1,58 +1,55 @@
+import * as THREE from "three";
 import { scene, camera, renderer } from "./three.js";
-import actor from "./Actor.js";
-
+import Actor from "./Actor.js";
 
 export default class Stage {
     constructor() {
-        this.actors = [];
+        this.actors = new Map();
         this.scene = scene;
         this.camera = camera;
         this.renderer = renderer;
         this.paused = false;
-        this.init();
+        this._init();
     }
 
-    add(actor) {
-        this.actors.push(actor);
+    _createActor(name, x, z) {
+        const geometry = new THREE.SphereGeometry(2, 10, 10, 4);
+        const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+        const actor = new Actor(x, 0, z, geometry, material);
+
         this.scene.add(actor);
+        this.actors.set(name, actor);
+
+        return actor;
     }
+
+    query(name, x, z) {
+        if (this.actors.has(name)) {
+            return this.actors.get(name);
+        }
+        return this._createActor(name, x, z);
+    }
+
 
     remove(actor) {
         this.actors = this.actors.filter((a) => a !== actor);
         this.scene.remove(actor);
     }
 
-    animate() {
-        requestAnimationFrame(() => this.animate());
+    _animate() {
+        requestAnimationFrame(() => this._animate());
         this.renderer.render(this.scene, this.camera);
         if (this.paused) return;
 
         this.actors.forEach((actor) => actor.update());
     }
 
-    init() {
-        this.animate();
+    _init() {
+        this._animate();
+    }
+
+
+    pause() {
+        this.paused = !this.paused;
     }
 }
-
-/// expriment area
-const stage = new Stage();
-
-
-
-const a1 = actor(0, -20, stage).
-    orbit(0, 0, -0.01);
-
-const a2 = actor(0, 0, stage)
-    .orbit(a1, 0, 0.02);
-
-const a3 = actor(10, 0, stage)
-    .orbit(a2, 0, -0.01);
-
-
-
-window.addEventListener("keydown", (e) => {
-    if (e.key === "r") {
-        stage.paused = !stage.paused;
-    }
-});
