@@ -1,4 +1,4 @@
-import { THREE, scene, camera, renderer } from './three.js';
+import * as THREE from 'three';
 
 export default class Actor extends THREE.Object3D {
     constructor(x, y, z, geometry, material) {

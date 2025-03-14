@@ -53,6 +53,7 @@ export default class REPL {
 
         } = options;
         this.stage = stage;
+        this.activeActors = [];
         this.editor = initEditor({
             root,
             initalCode,
@@ -67,8 +68,11 @@ export default class REPL {
 
         try {
             const transpiledCode = this.transpile(code);
-            console.log(transpiledCode);
-
+            
+            // this.activeActors will be updated after transpile
+            // cleanup inactive actors
+            this.stage.cleanup(this.activeActors);
+            
             const actorsArgs = this.stage.actors.keys();
             const actorsValues = this.stage.actors.values();
 
@@ -81,13 +85,14 @@ export default class REPL {
     }
 
     transpile(code) {
+        const currentActors = []
         const lines = code.split('\n');
         const transpiledLines = lines.map(line => {
             if (line.trim().startsWith('$')) {
                 const [namePart, codePart] = line.split(':');
                 const name = namePart.trim().substring(1).trim();
                 const actorCode = codePart.trim();
-
+                currentActors.push(name);
                 if (actorCode.startsWith('actor(')) {
                     const codePart = actorCode.split('.');
                     codePart[0] = codePart[0].slice(0, -1) + `, {name: '${name}', stage: stage}` + codePart[0].slice(-1);
@@ -98,6 +103,8 @@ export default class REPL {
             }
             return line;
         });
+
+        this.activeActors = currentActors;
 
         return transpiledLines.join('\n');
     }

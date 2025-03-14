@@ -15,25 +15,33 @@ export default class Stage {
     _createActor(name, x, z) {
         const geometry = new THREE.SphereGeometry(2, 10, 10, 4);
         const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+
         const actor = new Actor(x, 0, z, geometry, material);
 
         this.scene.add(actor);
         this.actors.set(name, actor);
+        console.log("Actor created", name, actor);
 
         return actor;
     }
 
     query(name, x, z) {
         if (this.actors.has(name)) {
+            console.log("Actor found", name, this.actors.get(name));
             return this.actors.get(name);
         }
         return this._createActor(name, x, z);
     }
 
+    cleanup(activeActors) {
+        this.actors.forEach((actor, name) => {
+            if (!activeActors.includes(name)) {
+                this.actors.delete(name);
+                this.scene.remove(actor);
 
-    remove(actor) {
-        this.actors = this.actors.filter((a) => a !== actor);
-        this.scene.remove(actor);
+                // is garbage collection needed?
+            }
+        });
     }
 
     _animate() {
