@@ -4,7 +4,7 @@ import { EditorView, keymap } from "@codemirror/view"
 import { defaultKeymap } from "@codemirror/commands"
 import { javascript } from "@codemirror/lang-javascript"
 
-import * as globalFunctions from './globalFunctions.js';
+import * as globalFunctions from './utils/globalFunctions.js';
 
 function initEditor({ root, initalCode = '', onEvaluate, onStop, onPause }) {
     console.log('Editor loaded');

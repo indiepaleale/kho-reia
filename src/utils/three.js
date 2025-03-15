@@ -29,15 +29,6 @@ const controls = new OrbitControls(camera, renderer.domElement);
 camera.position.set(0, 100, 100);
 controls.update();
 
-// function animate() {
-//     requestAnimationFrame(animate);
-//     renderer.render(scene, camera);
-//     controls.update();
-//     actors.forEach(actor => actor.update());
-// }
-// 
-// animate();
-
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();

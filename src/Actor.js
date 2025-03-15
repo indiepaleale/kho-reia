@@ -8,35 +8,70 @@ export default class Actor extends THREE.Object3D {
         this.position.set(x, y, z);
         this.target = this.position.clone();
         this.velocity = new THREE.Vector3(0, 0, 0);
+        this.paused = false;
     }
 
-    posUpdate() {
+    _posUpdate() {
         this.position.copy(this.position.lerp(this.target, 0.01));
     }
 
-    velUpdate() {
-
+    _velUpdate() {
     }
 
+    _setUpdate(callback) {
+        // create a new update function
+        const prevUpdate = this.update;
+        this.update = () => {
+            prevUpdate();
+            callback ? callback() : null;
+        }
+    }
     update() {
+        if (this.paused) return;
+        // update called by stage update loop
+        // conditional overriten by _posUpdate or _velUpdate
+    }
+
+    init() {
+        this.update = () => { };
+        this.target = this.position.clone();
+        return this;
+    }
+
+    step(index) {
+        this.sequenced
+    }
+
+
+    stop() {
+        this.paused = true;
+        return this;
     }
 
     go(x, z) {
-        this.update = () => this.posUpdate();
-        this.target.set(x, 0, z);
+        if (x instanceof THREE.Object3D) {
+            this.goTarget = x.position.clone();
+        }
+        else if (x instanceof THREE.Vector3) {
+            this.goTarget = x.clone();
+        }
+        else {
+            this.goTarget = new THREE.Vector3(x, 0, z);
+        }
+        this._setUpdate(() => {
+            this.position.copy(this.position.lerp(this.goTarget, 0.01));
+        });
         return this;
     }
     follow(x) {
         if (x instanceof THREE.Object3D) {
-            this.target = x.position;
+            this.followTarget = x.position;
         } else if (x instanceof THREE.Vector3) {
-            this.target = x;
-
-        } else if (Array.isArray(x) && x.length > 0 && Array.isArray(x[0])) {
-            const [x1, y1, z1] = x[0];
-            this.target.set(x1, y1, z1);
-        }
-        this.update = () => this.posUpdate();
+            this.followTarget = x;
+        } 
+        this._setUpdate(() => {
+            this.position.copy(this.position.lerp(this.followTarget, 0.01));
+        });
         return this;
     }
 
@@ -49,14 +84,13 @@ export default class Actor extends THREE.Object3D {
             this.target.set(x, 0, z);
         }
         const radius = this.position.distanceTo(this.target);
-        const update = () => {
+        this._setUpdate(() => {
             const center2pos = this.position.clone().sub(this.target);
             center2pos.normalize().multiplyScalar(radius);
             center2pos.applyAxisAngle(new THREE.Vector3(0, 1, 0), speed);
             this.position.copy(this.target).add(center2pos);
             // console.log('c', center2pos);
-        };
-        this.update = () => update();
+        });
         return this;
     }
 }

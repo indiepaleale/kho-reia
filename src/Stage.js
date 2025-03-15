@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { scene, camera, renderer } from "./three.js";
+import { scene, camera, renderer } from "./utils/three.js";
 import Actor from "./Actor.js";
 
 export default class Stage {
@@ -27,7 +27,6 @@ export default class Stage {
 
     query(name, x, z) {
         if (this.actors.has(name)) {
-            console.log("Actor found", name, this.actors.get(name));
             return this.actors.get(name);
         }
         return this._createActor(name, x, z);
