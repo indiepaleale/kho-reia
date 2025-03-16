@@ -9,6 +9,7 @@ export default class Stage {
         this.camera = camera;
         this.renderer = renderer;
         this.paused = false;
+        this.sequenceIntervalId = null; // Store the interval ID
         this._init();
     }
 
@@ -51,12 +52,31 @@ export default class Stage {
         this.actors.forEach((actor) => actor.update());
     }
 
-    _init() {
-        this._animate();
+    _startSequence() {
+        let index = 0;
+        this.sequenceIntervalId = setInterval(() => {
+            this.actors.forEach((actor) => actor.step(index));
+            index++;
+        }, 1000);
     }
 
+    _stopSequence() {
+        if (this.sequenceIntervalId) {
+            clearInterval(this.sequenceIntervalId);
+            this.sequenceIntervalId = null;
+        }
+    }
 
-    pause() {
-        this.paused = !this.paused;
+    _init() {
+        this._animate();
+        this._startSequence();
+    }
+
+    sequenceToggle() {
+        if (this.sequenceIntervalId) {
+            this._stopSequence();
+        } else {
+            this._startSequence();
+        }
     }
 }

@@ -58,7 +58,7 @@ export default class REPL {
             root,
             initalCode,
             onEvaluate: () => this.evaluate(),
-            onPause: () => this.stage.pause(),
+            onPause: () => this.stage.sequenceToggle(),
         });
         this.globalFunctions = globalFunctions;
     }

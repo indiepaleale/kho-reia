@@ -13,4 +13,7 @@ const repl = new REPL({
     stage: stage,
 });
 
-actor(0,0,{stage:stage,name:'test'}).orbit(20,10)
+const test0 = actor(0, 0, { stage: stage, name: 'test0' })
+    .go([-10,-10], [-10, 10], [10, 10], [10, -10])
+const test = actor(0, 0, { stage: stage, name: 'test' })
+    .go(test0)

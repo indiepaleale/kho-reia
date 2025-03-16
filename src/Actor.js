@@ -4,42 +4,49 @@ export default class Actor extends THREE.Object3D {
     constructor(x, y, z, geometry, material) {
         super();
         this.add(new THREE.Mesh(geometry, material));
-
         this.position.set(x, y, z);
-        this.target = this.position.clone();
         this.velocity = new THREE.Vector3(0, 0, 0);
         this.paused = false;
-    }
 
-    _posUpdate() {
-        this.position.copy(this.position.lerp(this.target, 0.01));
-    }
-
-    _velUpdate() {
+        this.sequence = [];
     }
 
     _setUpdate(callback) {
-        // create a new update function
-        const prevUpdate = this.update;
+        const originalUpdate = this.update; // Preserve the original method
+
         this.update = () => {
-            prevUpdate();
-            callback ? callback() : null;
-        }
+            originalUpdate(); // Call the original update function
+            callback();       // Execute the additional callback
+        };
     }
+
     update() {
-        if (this.paused) return;
-        // update called by stage update loop
-        // conditional overriten by _posUpdate or _velUpdate
+        // method called from stage
+        // dynamicly set by function chain
     }
 
     init() {
-        this.update = () => { };
-        this.target = this.position.clone();
+        this.update = () => {
+            if (this.paused) return;
+        };
+        this.paused = false;
         return this;
     }
 
     step(index) {
-        this.sequenced
+        this.sequence.forEach((seq) => {
+            seq(index);
+        });
+    }
+
+    _seqHandler(targetSetter, args) {
+        this.sequence.push((index) => {
+            targetSetter(args[index % args.length]);
+        });
+    }
+
+    _makeObject3D(x, z) {
+        return new THREE.Vector3(x, 0, z);
     }
 
 
@@ -48,48 +55,120 @@ export default class Actor extends THREE.Object3D {
         return this;
     }
 
-    go(x, z) {
-        if (x instanceof THREE.Object3D) {
-            this.goTarget = x.position.clone();
-        }
-        else if (x instanceof THREE.Vector3) {
-            this.goTarget = x.clone();
+    go(...args) {
+        // process args, keep Object3D to only sample position on each step
+        args = args.map((arg) => {
+            if (arg instanceof Array) {
+                return this._makeObject3D(arg[0], arg[1]);
+            }
+            else if (arg instanceof THREE.Object3D) {
+                return arg;
+            }
+            else if (arg instanceof THREE.Vector3) {
+                return arg;
+            }
+            else {
+                throw new Error('Invalid argument type');
+            }
+        });
+
+        const target = args[0];
+        if (target instanceof THREE.Object3D) {
+            this.goTarget = target.position.clone();
         }
         else {
-            this.goTarget = new THREE.Vector3(x, 0, z);
+            this.goTarget = target;
         }
+        this.goSpeed = 0.01;
+
+        // add sequence hander
+        this._seqHandler((newTarget) => {
+            if (newTarget instanceof THREE.Object3D) {
+                this.goTarget = newTarget.position.clone();
+            }
+            else if (newTarget instanceof THREE.Vector3) {
+                this.goTarget = newTarget;
+            }
+            else { throw new Error('Invalid argument type in go sequence '); }
+        }, args);
+
+        // set update function
         this._setUpdate(() => {
-            this.position.copy(this.position.lerp(this.goTarget, 0.01));
-        });
-        return this;
-    }
-    follow(x) {
-        if (x instanceof THREE.Object3D) {
-            this.followTarget = x.position;
-        } else if (x instanceof THREE.Vector3) {
-            this.followTarget = x;
-        } 
-        this._setUpdate(() => {
-            this.position.copy(this.position.lerp(this.followTarget, 0.01));
+            this.position.copy(this.position.lerp(this.goTarget, this.goSpeed));
         });
         return this;
     }
 
-    orbit(x, z, speed = 0.01) {
-        if (x instanceof THREE.Object3D) {
-            this.target = x.position;
-        } else if (x instanceof THREE.Vector3) {
-            this.target = x;
-        } else {
-            this.target.set(x, 0, z);
-        }
-        const radius = this.position.distanceTo(this.target);
+    follow(...args) {
+        // process args, keep Object3D to only sample position on each step
+        args = args.map((arg) => {
+            if (arg instanceof Array) {
+                return this._makeObject3D(arg[0], arg[1]);
+            }
+            else if (arg instanceof THREE.Object3D) {
+                return arg.position;
+            }
+            else if (arg instanceof THREE.Vector3) {
+                return arg;
+            }
+            else {
+                throw new Error('Invalid argument type');
+            }
+        });
+
+        this.followTarget = args[0];
+        this.followSpeed = 0.01;
+
+        // add sequence hander
+        this._seqHandler((newTarget) => {
+            if (newTarget instanceof THREE.Vector3) {
+                this.followTarget = newTarget;
+            }
+            else { throw new Error('Invalid argument type in go sequence '); }
+        }, args);
+
+        // set update function
         this._setUpdate(() => {
-            const center2pos = this.position.clone().sub(this.target);
-            center2pos.normalize().multiplyScalar(radius);
-            center2pos.applyAxisAngle(new THREE.Vector3(0, 1, 0), speed);
-            this.position.copy(this.target).add(center2pos);
-            // console.log('c', center2pos);
+            this.position.copy(this.position.lerp(this.followTarget, this.goSpeed));
+        });
+        return this;
+    }
+
+    orbit(...args) {
+        // process args, return Vector3, keep reference if is Object3D
+        args = args.map((arg) => {
+            if (arg instanceof Array) {
+                return this._makeObject3D(arg[0], arg[1]);
+            }
+            else if (arg instanceof THREE.Object3D) {
+                return arg.position;
+            }
+            else if (arg instanceof THREE.Vector3) {
+                return arg;
+            }
+            else {
+                throw new Error('Invalid argument type');
+            }
+        });
+
+        this.orbitTarget = args[0]; // create new object if not exist
+        this.orbitRadius = this.position.distanceTo(this.orbitTarget);
+        this.orbitSpeed = 0.01;
+
+        this._seqHandler((newTarget) => {
+            console.log(newTarget);
+            if (newTarget instanceof THREE.Vector3) {
+                this.orbitTarget = newTarget;
+            }
+            else { throw new Error('Invalid argument type in orbit sequence '); }
+            this.orbitRadius = this.position.distanceTo(this.orbitTarget);
+        }, args);
+
+        this._setUpdate(() => {
+            const center2pos = this.position.clone().sub(this.orbitTarget);
+            center2pos.normalize().multiplyScalar(this.orbitRadius);
+            center2pos.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.orbitSpeed);
+            this.position.copy(this.orbitTarget).add(center2pos);
         });
         return this;
     }
