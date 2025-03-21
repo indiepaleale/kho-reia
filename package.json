@@ -14,6 +14,8 @@
   "dependencies": {
     "@codemirror/lang-javascript": "^6.2.3",
     "codemirror": "^6.0.1",
+    "osc": "^2.4.5",
+    "osc-js": "^2.4.1",
     "three": "^0.174.0"
   }
 }

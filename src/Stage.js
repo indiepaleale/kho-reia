@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { scene, camera, renderer } from "./utils/three.js";
 import Actor from "./Actor.js";
+// import { oscData } from "./utils/osc.js";
 
 export default class Stage {
     constructor() {
@@ -37,9 +38,7 @@ export default class Stage {
         this.actors.forEach((actor, name) => {
             if (!activeActors.includes(name)) {
                 this.actors.delete(name);
-                this.scene.remove(actor);
-
-                // is garbage collection needed?
+                this.scene.remove(actor); 
             }
         });
     }

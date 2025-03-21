@@ -45,7 +45,7 @@ export default class Actor extends THREE.Object3D {
         });
     }
 
-    _makeObject3D(x, z) {
+    _makeVector3D(x, z) {
         return new THREE.Vector3(x, 0, z);
     }
 
@@ -59,9 +59,10 @@ export default class Actor extends THREE.Object3D {
         args = processInput(args);
         // console.log(args);
         // process args, keep Object3D to only sample position on each step
+        console.log(args);
         args = args.map((arg) => {
             if (arg instanceof Array) {
-                return this._makeObject3D(arg[0], arg[1]);
+                return this._makeVector3D(arg[0], arg[1]);
             }
             else if (arg instanceof THREE.Object3D) {
                 return arg;
@@ -126,7 +127,7 @@ export default class Actor extends THREE.Object3D {
         // process args, keep Object3D to only sample position on each step
         args = args.map((arg) => {
             if (arg instanceof Array) {
-                return this._makeObject3D(arg[0], arg[1]);
+                return this._makeVector3D(arg[0], arg[1]);
             }
             else if (arg instanceof THREE.Object3D) {
                 return arg.position;
@@ -182,7 +183,7 @@ export default class Actor extends THREE.Object3D {
         // process args, return Vector3, keep reference if is Object3D
         args = args.map((arg) => {
             if (arg instanceof Array) {
-                return this._makeObject3D(arg[0], arg[1]);
+                return this._makeVector3D(arg[0], arg[1]);
             }
             else if (arg instanceof THREE.Object3D) {
                 return arg.position;
@@ -238,12 +239,20 @@ export default class Actor extends THREE.Object3D {
     }
 }
 
+const argsType = Object.freeze({
+    NUMBER: "NUMBER",
+    POS: "POS",
+});
+
 // helper function to handle input
 function processInput(args) {
+
     // If there's only one argument and it's an array or a Proxy-wrapped array
-    if (args.length === 1 && (Array.isArray(args[0]) || Array.prototype.isPrototypeOf(args[0]))) {
-      args = args[0]; // Unwrap it to process normally
+    if (args.length === 1 && args[0].isSequence) {
+        args = args[0]; // Unwrap it to process normally
+        console.log("Find sequence");
     }
     // Handle case where elements inside args might be arrays
-    return args.map(item => Array.isArray(item) || Array.prototype.isPrototypeOf(item) ? [...item] : item);
-  }
+    return args;
+}
+

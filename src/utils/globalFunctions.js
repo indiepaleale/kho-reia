@@ -1,3 +1,5 @@
+// Note: This file contains global functions that can be used in the repl environment.
+
 const actor = (x, z, { name, stage }) => {
     stage = stage || window.stage;
     const actor = stage.query(name, x, z);
@@ -14,7 +16,7 @@ const shift = (index, ...args) => {
     return shiftedArgs;
 }
 const random = (...elements) => {
-    return new Proxy([...elements], {
+    const sequence = new Proxy([...elements], {
         get(target, prop) {
             if (prop === 'length') return target.length;
             if (prop === Symbol.iterator) return function* () { yield* shuffle(target); };
@@ -36,15 +38,22 @@ const random = (...elements) => {
             return target[prop];
         }
     });
+    sequence.isSequence = true;
+    return sequence;
 }
 
 // Shuffle helper function
 function shuffle(arr) {
+    arr.isSequence = true;
     return arr
         .map(v => ({ v, sort: Math.random() }))
         .sort((a, b) => a.sort - b.sort)
         .map(({ v }) => v);
 }
 
+function sequence(...args) {
+    args.isSequence = true;
+    return args;
+}
 
-export { actor, shift, random };
+export { actor, shift, random, sequence };
