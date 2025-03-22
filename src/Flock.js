@@ -58,7 +58,7 @@ export default class Flock extends THREE.Object3D {
 
         // default values
         this.boids.forEach((boid) => {
-            boid._alignRadius = 20;
+            boid._alignRadius = 10;
             boid.alignWeight = 1;
         });
 
@@ -273,8 +273,8 @@ class Boid extends THREE.Mesh {
         if (total > 0) {
             // diff to average velocity multiplied by weight
             align.divideScalar(total);
-            align.sub(this._vel);
-            align.multiplyScalar(this.alignWeight * 0.1);
+            // align.sub(this._vel);
+            align.multiplyScalar(this.alignWeight * 0.05);
 
             // average position
             cohesion.divideScalar(total);
