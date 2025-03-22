@@ -15,7 +15,7 @@ function initEditor({ root, initalCode = '', onEvaluate, onStop, onPause }) {
         extensions: [
             basicSetup,
             keymap.of(defaultKeymap),
-            javascript(),
+            // javascript(),
             Prec.highest(
                 keymap.of([
                     {

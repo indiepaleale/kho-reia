@@ -16,7 +16,7 @@ export default class Stage {
 
     _createActor(name, x, z) {
         const geometry = new THREE.SphereGeometry(2, 10, 10, 4);
-        const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+        const material = new THREE.MeshPhongMaterial({ color: 0xffffff, emissive: 0xc0c0c0, opacity: 0.1 });
 
         const actor = new Actor(x, 0, z, geometry, material);
 
@@ -38,7 +38,7 @@ export default class Stage {
         this.actors.forEach((actor, name) => {
             if (!activeActors.includes(name)) {
                 this.actors.delete(name);
-                this.scene.remove(actor); 
+                this.scene.remove(actor);
             }
         });
     }

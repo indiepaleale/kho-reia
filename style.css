@@ -14,7 +14,7 @@ body {
   margin: 0;
   padding: 0;
   font-size: 1.5em;
-  background-color: #00000076;
+  background-color: #0f0f0f76;
   color: white;
   border-bottom: #ffffff 1px solid;
   padding: 10px;
@@ -24,12 +24,12 @@ body {
 #editor-container {
   flex-grow: 1;
   overflow: auto;
-  mix-blend-mode: exclusion;
+  /* mix-blend-mode: ; */
 }
 
 .cm-editor {
   height: 100%;
-  color: aliceblue;
+  color: rgb(255, 255, 255);
 }
 
 .ͼ2 .cm-gutters {
@@ -43,4 +43,14 @@ body {
   top: 0;
   left: 0;
   z-index: -1;
+}
+
+.cm-cursor {
+  width: 2px !important;
+  /* height: 18px !important; */
+  background-color: rgb(255, 255, 255);
+}
+
+.cm-selectionBackground{
+  background-color: #006b79 !important;
 }

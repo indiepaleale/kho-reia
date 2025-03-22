@@ -3,7 +3,9 @@ import * as THREE from 'three';
 export default class Actor extends THREE.Object3D {
     constructor(x, y, z, geometry, material) {
         super();
-        this.add(new THREE.Mesh(geometry, material));
+        this.mesh = new THREE.Mesh(geometry, material);
+        this.add(this.mesh);
+        this.mesh.castShadow = true;
         this.position.set(x, y, z);
         this.velocity = new THREE.Vector3(0, 0, 0);
         this.paused = false;
