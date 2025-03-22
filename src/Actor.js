@@ -7,8 +7,10 @@ export default class Actor extends THREE.Object3D {
         this.add(this.mesh);
         this.mesh.castShadow = true;
         this.position.set(x, y, z);
-        this.velocity = new THREE.Vector3(0, 0, 0);
+        this._vel = new THREE.Vector3(0, 0, 0);
+        this.prevPos = this.position.clone();
         this.paused = false;
+        this.isActor = true;
 
         this.sequence = [];
     }
@@ -29,9 +31,12 @@ export default class Actor extends THREE.Object3D {
 
     init() {
         this.update = () => {
+            this._vel = new THREE.Vector3().subVectors(this.position, this.prevPos);
+            this.prevPos.copy(this.position);
             if (this.paused) return;
         };
         this.paused = false;
+        this.sequence = [];
         return this;
     }
 
@@ -61,7 +66,6 @@ export default class Actor extends THREE.Object3D {
         args = processInput(args);
         // console.log(args);
         // process args, keep Object3D to only sample position on each step
-        console.log(args);
         args = args.map((arg) => {
             if (arg instanceof Array) {
                 return this._makeVector3D(arg[0], arg[1]);
@@ -252,7 +256,7 @@ function processInput(args) {
     // If there's only one argument and it's an array or a Proxy-wrapped array
     if (args.length === 1 && args[0].isSequence) {
         args = args[0]; // Unwrap it to process normally
-        console.log("Find sequence");
+        // console.log("Find sequence");
     }
     // Handle case where elements inside args might be arrays
     return args;

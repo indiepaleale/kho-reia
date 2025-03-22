@@ -21,18 +21,17 @@ camera.lookAt(new THREE.Vector3(0, -10, 0));
 // Floor
 const floorGeometry = new THREE.BoxGeometry(100, 200, 100);
 const floorMaterial = new THREE.MeshPhongMaterial({
-    color: 0xa0a0a0,
+    color: 0xc0c0c0,
     shininess: 100,
     specular: 0x111111,
 });
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-floor.position.set(0, -103, 0);
+floor.position.set(0, -102, 0);
 floor.receiveShadow = true;
 scene.add(floor);
 
 // Light
-const light = new THREE.DirectionalLight(0xffffff, 0.4);
-light.castShadow = true;
+const light = new THREE.DirectionalLight(0xffffff, 1);
 light.position.set(5, 20, 10);
 scene.add(light);
 

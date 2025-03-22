@@ -1,13 +1,23 @@
 // Note: This file contains global functions that can be used in the repl environment.
 
-const actor = (x, z, { name, stage }) => {
+const stepTime = (time) => {
     stage = stage || window.stage;
-    const actor = stage.query(name, x, z);
+    stage.setInterval(time);
+}
 
+const actor = (x, z, name) => {
+    stage = stage || window.stage;
+    const actor = stage.queryActor(name, x, z);
     actor.init();
     return actor;
 }
 
+const flock = (numBoids) => {
+    stage = stage || window.stage;
+    const flock = stage.queryFlock(numBoids);
+    flock.init();
+    return flock;
+}
 // shift pattern
 const shift = (index, ...args) => {
     const count = args.length;
@@ -56,4 +66,4 @@ function sequence(...args) {
     return args;
 }
 
-export { actor, shift, random, sequence };
+export { stepTime, actor, shift, random, sequence, flock };

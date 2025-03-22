@@ -71,7 +71,7 @@ export default class REPL {
             
             // this.activeActors will be updated after transpile
             // cleanup inactive actors
-            this.stage.cleanup(this.activeActors);
+            this.stage.preEval(this.activeActors);
             
             const actorsArgs = this.stage.actors.keys();
             const actorsValues = this.stage.actors.values();
@@ -79,6 +79,7 @@ export default class REPL {
             const functionsArgs = ['stage', ...actorsArgs, ...Object.keys(this.globalFunctions)];
             const functionValues = [this.stage, ...actorsValues, ...Object.values(this.globalFunctions)];
             new Function(...functionsArgs, transpiledCode)(...functionValues);
+            this.stage.postEval();
         } catch (e) {
             console.error(e);
         }
@@ -95,7 +96,7 @@ export default class REPL {
                 currentActors.push(name);
                 if (actorCode.startsWith('actor(')) {
                     const codePart = actorCode.split('.');
-                    codePart[0] = codePart[0].slice(0, -1) + `, {name: '${name}', stage: stage}` + codePart[0].slice(-1);
+                    codePart[0] = codePart[0].slice(0, -1) + `, '${name}'` + codePart[0].slice(-1);
                     return codePart.join('.');
                 } else {
                     throw new Error(`${name}: needs to be followed with actor()`);
